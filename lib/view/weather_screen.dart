@@ -67,7 +67,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
           }
 
           final data = snapshot.data!;
-          final currentTemp = data['list'][0]['main']['temp'];
+          final currentWeaterData = data['list'][0];
+          final currentTemp = currentWeaterData['main']['temp'];
+          final currentSky = currentWeaterData['weather'][0]['main'];
+          final currentPressure = currentWeaterData['main']['pressure'];
+          final currentHumidity = currentWeaterData['main']['humidity'];
+          final windSpeed = currentWeaterData['wind']['speed'];
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -102,15 +107,17 @@ class _WeatherScreenState extends State<WeatherScreen> {
                               const SizedBox(
                                 height: 20,
                               ),
-                              const Icon(
-                                Icons.cloud,
+                              Icon(
+                                currentSky == 'Clouds' || currentSky == 'Rain'
+                                    ? Icons.cloud
+                                    : Icons.sunny,
                                 size: 64,
                               ),
                               const SizedBox(
                                 height: 20,
                               ),
-                              const Text(
-                                'Rain',
+                              Text(
+                                currentSky,
                                 style: const TextStyle(
                                   fontSize: 20,
                                 ),
@@ -135,39 +142,45 @@ class _WeatherScreenState extends State<WeatherScreen> {
                 const SizedBox(
                   height: 16,
                 ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      HourlyForecastItem(
-                        time: '00:00',
-                        icon: Icons.cloud,
-                        temperature: '301.22',
-                      ),
-                      HourlyForecastItem(
-                        time: '03:00',
-                        icon: Icons.sunny,
-                        temperature: '300.52',
-                      ),
-                      HourlyForecastItem(
-                        time: '06:00',
-                        icon: Icons.cloud,
-                        temperature: '301.22',
-                      ),
-                      HourlyForecastItem(
-                        time: '09:00',
-                        icon: Icons.cloud,
-                        temperature: '301.22',
-                      ),
-                      HourlyForecastItem(
-                        time: '12:00',
-                        icon: Icons.cloud,
-                        temperature: '301.22',
-                      ),
-                    ],
-                  ),
-                ),
+                // SingleChildScrollView(
+                //   scrollDirection: Axis.horizontal,
+                //   child: Row(
+                //     children: [
+                //       for(int i=0;i<5;i++)
+                //       HourlyForecastItem(
+                //         time: data['list'][i+1]['dt'].toString(),
+                //         icon:  data['list'][i+1]['weather'][0]['main']==
+                //         'Clouds' ||
+                //          data['list'][i+1]['weather'][0]['main']=='Ranin'
+                //          ? Icons.cloud
+                //          :Icons.sunny,
+                //         temperature: data['list'][i+1]['main']['temp'].toString(),
+                //       ),
+
+                //     ],
+                //   ),
+                // ),
                 // Weather forcast card
+
+                SizedBox(
+                  height: 120,
+                  child: ListView.builder(
+                      itemCount: 5,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (context, index) {
+                        final hourlyForecast = data['list'][index + 1];
+                        final hourlySky =
+                            data['list'][index + 1]['weather'][0]['main'];
+                        return HourlyForecastItem(
+                          time: hourlyForecast['dt'].toString(),
+                          temperature:
+                              hourlyForecast['main']['temp'].toString(),
+                          icon: hourlySky == 'Clouds' || hourlySky == 'Ranin'
+                              ? Icons.cloud
+                              : Icons.sunny,
+                        );
+                      }),
+                ),
                 const SizedBox(
                   height: 20,
                 ),
@@ -182,23 +195,23 @@ class _WeatherScreenState extends State<WeatherScreen> {
                   height: 8,
                 ),
                 // Additional Info card
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     AdditionalInfoItem(
                       icon: Icons.water_drop,
                       label: 'Humidity',
-                      value: '91',
+                      value: currentHumidity.toString(),
                     ),
                     AdditionalInfoItem(
                       icon: Icons.air,
                       label: 'Wind Speed',
-                      value: '7.5',
+                      value: windSpeed.toString(),
                     ),
                     AdditionalInfoItem(
                       icon: Icons.beach_access,
                       label: 'Pressue',
-                      value: '1000',
+                      value: currentPressure.toString(),
                     ),
                   ],
                 )
@@ -211,5 +224,4 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 }
 
-
-//15:19:00 hours
+//15:48:00 hours
