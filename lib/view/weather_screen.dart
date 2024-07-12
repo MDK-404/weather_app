@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 import 'package:weather_app/secret/key.dart';
 import 'package:weather_app/view/additional_info_item.dart';
 import 'package:weather_app/view/hourly_forecast_item.dart';
@@ -171,10 +172,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
                         final hourlyForecast = data['list'][index + 1];
                         final hourlySky =
                             data['list'][index + 1]['weather'][0]['main'];
+                        final hourlyTemp =
+                            hourlyForecast['main']['temp'].toString();
+                        final time = DateTime.parse(hourlyForecast['dt_txt']);
                         return HourlyForecastItem(
-                          time: hourlyForecast['dt'].toString(),
-                          temperature:
-                              hourlyForecast['main']['temp'].toString(),
+                          time: DateFormat.Hm().format(time),
+                          temperature: hourlyTemp,
                           icon: hourlySky == 'Clouds' || hourlySky == 'Ranin'
                               ? Icons.cloud
                               : Icons.sunny,
@@ -210,7 +213,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
                     ),
                     AdditionalInfoItem(
                       icon: Icons.beach_access,
-                      label: 'Pressue',
+                      label: 'Pressure',
                       value: currentPressure.toString(),
                     ),
                   ],
