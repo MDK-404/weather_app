@@ -1,10 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_app/secret/key.dart';
 import 'package:weather_app/view/additional_info_item.dart';
@@ -20,7 +17,7 @@ class WeatherScreen extends StatefulWidget {
 }
 
 class _WeatherScreenState extends State<WeatherScreen> {
-  late Future<Map<String, dynamic>> weather;
+  Future<Map<String, dynamic>>? weather;
   String cityname = 'Islamabad';
   String displayCityName = 'Islamabad';
 
@@ -86,8 +83,19 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   @override
   void initState() {
-    weather = getCurrentWeather();
     super.initState();
+    weather = null; // Initialize with null
+    getCurrentPosition().then((position) {
+      setState(() {
+        weather = getCurrentWeatherByLocation(
+            lat: position.latitude, lon: position.longitude);
+        displayCityName = 'Current Location';
+      });
+    }).catchError((error) {
+      setState(() {
+        weather = getCurrentWeather();
+      });
+    });
   }
 
   @override
@@ -136,7 +144,15 @@ class _WeatherScreenState extends State<WeatherScreen> {
               return Center(child: Text(snapshot.error.toString()));
             }
 
+            if (!snapshot.hasData || snapshot.data == null) {
+              return const Center(child: Text('No weather data available.'));
+            }
+
             final data = snapshot.data!;
+            if (data['list'] == null || data['list'].isEmpty) {
+              return const Center(child: Text('No weather data available.'));
+            }
+
             final currentWeatherData = data['list'][0];
             final currentTemp = currentWeatherData['main']['temp'];
             final currentSky = currentWeatherData['weather'][0]['main'];
@@ -276,22 +292,22 @@ class _WeatherScreenState extends State<WeatherScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       AdditionalInfoItem(
-                        icon: Icons.water_drop,
                         label: 'Humidity',
                         value: currentHumidity.toString(),
+                        icon: Icons.water_drop,
                       ),
                       AdditionalInfoItem(
-                        icon: Icons.air,
                         label: 'Wind Speed',
                         value: windSpeed.toString(),
+                        icon: Icons.air,
                       ),
                       AdditionalInfoItem(
-                        icon: Icons.beach_access,
                         label: 'Pressure',
                         value: currentPressure.toString(),
+                        icon: Icons.beach_access,
                       ),
                     ],
-                  ),
+                  )
                 ],
               ),
             );
