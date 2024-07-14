@@ -8,6 +8,7 @@ import 'package:weather_app/view/additional_info_item.dart';
 import 'package:weather_app/view/hourly_forecast_item.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
@@ -81,15 +82,28 @@ class _WeatherScreenState extends State<WeatherScreen> {
     return await Geolocator.getCurrentPosition();
   }
 
+  Future<String> getCityNameFromCoordinates(Position position) async {
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+    if (placemarks.isNotEmpty) {
+      return placemarks.first.locality ?? 'Unknown Location';
+    } else {
+      return 'Unknown Location';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     weather = null; // Initialize with null
-    getCurrentPosition().then((position) {
+    getCurrentPosition().then((position) async {
+      String cityName = await getCityNameFromCoordinates(position);
       setState(() {
         weather = getCurrentWeatherByLocation(
             lat: position.latitude, lon: position.longitude);
-        displayCityName = 'Current Location';
+        displayCityName = cityName;
       });
     }).catchError((error) {
       setState(() {
@@ -123,10 +137,11 @@ class _WeatherScreenState extends State<WeatherScreen> {
           IconButton(
             onPressed: () async {
               final position = await getCurrentPosition();
+              String cityName = await getCityNameFromCoordinates(position);
               setState(() {
                 weather = getCurrentWeatherByLocation(
                     lat: position.latitude, lon: position.longitude);
-                displayCityName = 'Current Location';
+                displayCityName = cityName;
               });
             },
             icon: const Icon(Icons.location_on),
